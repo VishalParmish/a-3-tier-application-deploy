@@ -25,7 +25,7 @@ module "ecs" {
   cluster_name            = "three-tier-cluster"
   frontend_image          = module.ecr.frontend_repo_url
   backend_image           = module.ecr.backend_repo_url
-  mongo_connection_string = "mongodb://admin:secret123@10.0.2.37:27017/taskmanager?authSource=admin"
+  mongo_connection_string = "mongodb://admin:secret123@<MONGODB_PRIVATE_IP>:27017/taskmanager?authSource=admin"
 
   subnet_ids     = module.vpc.public_subnet_ids
   ecs_sg_id      = module.security_group.ecs_sg_id
