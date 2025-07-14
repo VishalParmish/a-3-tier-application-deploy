@@ -21,15 +21,15 @@ resource "aws_lb_target_group" "backend" {
   vpc_id   = var.vpc_id
   target_type = "ip"
 
-  #  health_check {
-  #   path                = "/"
-  #   protocol            = "HTTP"
-  #   interval            = 30
-  #   timeout             = 5
-  #   healthy_threshold   = 3
-  #   unhealthy_threshold = 2
-  #   matcher             = "200-399"
-  # }
+   health_check {
+    path                = "/"
+    protocol            = "HTTP"
+    interval            = 30
+    timeout             = 5
+    healthy_threshold   = 3
+    unhealthy_threshold = 2
+    matcher             = "200-399"
+  }
 }
 
 resource "aws_lb_listener" "frontend" {
