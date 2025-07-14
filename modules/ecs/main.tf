@@ -3,7 +3,7 @@ resource "aws_ecs_cluster" "cluster" {
 }
 
 resource "aws_iam_role" "ecs_task_execution_role" {
-  name = "ecsTaskExecutionRole"
+  name = var.task_execution_role
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -25,21 +25,21 @@ resource "aws_iam_role_policy_attachment" "ecs_task_execution_role_policy" {
 }
 
 resource "aws_ecs_task_definition" "frontend" {
-  family                   = "frontend-task"
+  family                   = var.frontend_family
   requires_compatibilities = ["FARGATE"]
   network_mode             = "awsvpc"
-  cpu                      = "256"
-  memory                   = "512"
+  cpu                      = var.frontend_cpu
+  memory                   = var.frontend_memory
   execution_role_arn       = aws_iam_role.ecs_task_execution_role.arn
 
   container_definitions = jsonencode([
     {
-      name      = "frontend"
+      name      = var.frontend_cont
       image     = var.frontend_image
       essential = true
       portMappings = [
         {
-          containerPort = 3000
+          containerPort = var.frontend_port
           protocol      = "tcp"
         }
       ]
@@ -48,21 +48,21 @@ resource "aws_ecs_task_definition" "frontend" {
 }
 
 resource "aws_ecs_task_definition" "backend" {
-  family                   = "backend-task"
+  family                   = var.backend_family
   requires_compatibilities = ["FARGATE"]
   network_mode             = "awsvpc"
-  cpu                      = "256"
-  memory                   = "512"
+  cpu                      = var.backend_cpu
+  memory                   = var.backend_memory
   execution_role_arn       = aws_iam_role.ecs_task_execution_role.arn
 
   container_definitions = jsonencode([
     {
-      name      = "backend"
+      name      = var.backend_cont
       image     = var.backend_image
       essential = true
       portMappings = [
         {
-          containerPort = 3500
+          containerPort = var.backend_port
           protocol      = "tcp"
         }
       ]
@@ -77,21 +77,21 @@ resource "aws_ecs_task_definition" "backend" {
 }
 
 resource "aws_ecs_task_definition" "mongodb" {
-  family                   = "mongodb-task"
+  family                   = var.mongodb_family
   requires_compatibilities = ["FARGATE"]
   network_mode             = "awsvpc"
-  cpu                      = "256"
-  memory                   = "512"
+  cpu                      = var.mongo_cpu
+  memory                   = var.mongo_memory
   execution_role_arn       = aws_iam_role.ecs_task_execution_role.arn
 
   container_definitions = jsonencode([
     {
-      name      = "mongodb"
-      image     = "mongo:6"
+      name      = var.mongodb_cont
+      image     = var.mongo_image
       essential = true
       portMappings = [
         {
-          containerPort = 27017
+          containerPort = var.mongo_port
           protocol      = "tcp"
         }
       ]
@@ -110,7 +110,7 @@ resource "aws_ecs_task_definition" "mongodb" {
 }
 
 resource "aws_ecs_service" "frontend" {
-  name            = "frontend-service"
+  name            = var.frontend_service
   cluster         = aws_ecs_cluster.cluster.id
   task_definition = aws_ecs_task_definition.frontend.arn
   desired_count   = 1
@@ -124,14 +124,14 @@ resource "aws_ecs_service" "frontend" {
 
   load_balancer {
     target_group_arn = var.frontend_tg_arn
-    container_name   = "frontend"
-    container_port   = 3000
+    container_name   = var.frontend_cont
+    container_port   = var.frontend_port
   }
   depends_on = [aws_iam_role_policy_attachment.ecs_task_execution_role_policy]
 }
 
 resource "aws_ecs_service" "backend" {
-  name            = "backend-service"
+  name            = var.backend_service
   cluster         = aws_ecs_cluster.cluster.id
   task_definition = aws_ecs_task_definition.backend.arn
   desired_count   = 1
@@ -145,14 +145,14 @@ resource "aws_ecs_service" "backend" {
 
   load_balancer {
     target_group_arn = var.backend_tg_arn
-    container_name   = "backend"
-    container_port   = 3500
+    container_name   = var.backend_cont
+    container_port   = var.backend_port
   }
   depends_on = [aws_iam_role_policy_attachment.ecs_task_execution_role_policy]
 }
 
 resource "aws_ecs_service" "mongodb" {
-  name            = "mongodb-service"
+  name            = var.mongodb_service
   cluster         = aws_ecs_cluster.cluster.id
   task_definition = aws_ecs_task_definition.mongodb.arn
   desired_count   = 1

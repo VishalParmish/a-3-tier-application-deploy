@@ -9,3 +9,7 @@ variable "vpc_id" {
 variable "alb_sg_id" {
   type = string
 }
+
+variable "alb_name" {}
+variable "frontend_tg" {}
+variable "backend_tg" {}
